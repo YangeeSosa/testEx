@@ -179,7 +179,10 @@ func createTable(db *sql.DB, tableName string, headers []string, columnTypes []s
 		cols[i] = fmt.Sprintf("%s %s", quoteIdent(colName), cType)
 	}
 
-	sqlStr := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", quoteIdent(tableName), strings.Join(cols, ", "))
+	dropStr := fmt.Sprintf("DROP TABLE IF EXISTS %s", quoteIdent(tableName))
+	_, _ = db.Exec(dropStr)
+
+	sqlStr := fmt.Sprintf("CREATE TABLE %s (%s)", quoteIdent(tableName), strings.Join(cols, ", "))
 
 	_, err := db.Exec(sqlStr)
 	if err != nil {
@@ -211,11 +214,11 @@ func insertRows(db *sql.DB, tableName string, headers []string, rows [][]string)
 			if i < len(row) {
 				args[i] = row[i]
 			} else {
-				args = nil
+				args[i] = nil
 			}
 		}
 		if _, err := db.Exec(stmtTxt, args...); err != nil {
-			return fmt.Errorf("ршибка вставки: %w", err)
+			return fmt.Errorf("ошибка вставки: %w", err)
 		}
 	}
 	return nil
@@ -249,4 +252,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
